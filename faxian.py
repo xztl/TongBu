@@ -36,7 +36,7 @@ class WeChatSpider():
         tab = self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@resource-id="com.tencent.mm:id/bq"]/android.widget.LinearLayout/android.widget.RelativeLayout[3]')))
         tab.click()
         # 朋友圈
-        moments = self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@text="扫一扫"]')))
+        moments = self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@text="朋友圈"]')))
         moments.click()
 
     def crawl(self):
