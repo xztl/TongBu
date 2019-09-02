@@ -28,7 +28,7 @@ class WeChat(object):
         }
         self.driver = webdriver.Remote('http://127.0.0.1:4723/wd/hub', self.desired_caps)
         self.driver.implicitly_wait(1000)
-
+        self.wait = WebDriverWait(self.driver, 1000)
     # 弃用
     # def login(self):
     #     print('开始登陆')
@@ -149,7 +149,6 @@ class WeChat(object):
                     sleep(SCROLL_SLEEP_TIME)
                 except NoSuchElementException:
                     pass
-
 
 if __name__ == '__main__':
     weChat = WeChat()
