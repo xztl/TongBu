@@ -128,7 +128,55 @@ class WeChat(object):
                     for info in infoList:
                         print(info.text)
 
+    # 获取好友列表
+    def getFriendListMsg(self):
+        # 点击朋友圈
+        friendPage = self.driver.find_element_by_xpath("//*[@text='通讯录']")
+        TouchAction(self.driver).tap(friendPage).perform()
+        # 定义数据集合
+        friendCollection = dict()
+        # 获取所有的联系人昵称
+
+        while True:
+            flag = True
+            self.driver.swipe(500, 800, 500, 500, 2000)
+            friendList = self.driver.find_elements_by_id('com.tencent.mm:id/ol')
+            for friend in friendList:
+                friendName = friend.text
+                doesItExist = False
+                for item in friendCollection:
+                    if item in friendName:
+                        doesItExist = True
+                if not doesItExist:
+                    friendCollection[friendName] = friend
+
+            try:
+                self.driver.find_element_by_id('com.tencent.mm:id/b3o')
+                print('朋友列表获取完成')
+                flag = False
+            except Exception:
+                pass
+
+            if flag is False:
+                break
+
+        print(friendCollection)
+
+        #  获取列表成功 开始循环点击进入
+
+
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
     weChat = WeChat()
-    weChat.getFriendMsg()
+    # weChat.getFriendMsg()
+    weChat.getFriendListMsg()
