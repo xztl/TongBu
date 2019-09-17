@@ -1,7 +1,9 @@
+# coding=gbk
+
 from appium import webdriver
 from time import sleep
 from appium.webdriver.common.touch_action import TouchAction
-
+import os
 
 class WeChatTest(object):
     def __init__(self):
@@ -20,37 +22,37 @@ class WeChatTest(object):
         self.weChatNum = ""
 
     def login(self):
-        print('å¼€å§‹ç™»é™†')
+        print('¿ªÊ¼µÇÂ½')
         loginBtn = self.driver.find_element_by_id("com.tencent.mm:id/edu")
         loginBtn.click()
 
-        print('å½•å…¥è´¦å·')
+        print('Â¼ÈëÕËºÅ')
         phoneEdt = self.driver.find_element_by_id("com.tencent.mm:id/li")
         phoneEdt.send_keys("17308053023")
 
-        print('ç‚¹å‡»ä¸‹ä¸€æ­¥')
+        print('µã»÷ÏÂÒ»²½')
         loginNext = self.driver.find_element_by_id("com.tencent.mm:id/b0f")
         loginNext.click()
         sleep(4)
 
-        print('è¾“å…¥å¯†ç ')
+        print('ÊäÈëÃÜÂë')
         passwordEdt = self.driver.find_element_by_xpath(
             "/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.View/android.widget.FrameLayout[2]/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.ScrollView/android.widget.LinearLayout/android.widget.LinearLayout[2]/android.widget.EditText")
         passwordEdt.send_keys("Aa123456")
 
-        print('ç™»å½•---->')
+        print('µÇÂ¼---->')
         loginBtn = self.driver.find_element_by_id("com.tencent.mm:id/b0f")
         loginBtn.click()
         sleep(5)
 
-    # æ·»åŠ å¥½å‹
+    # Ìí¼ÓºÃÓÑ
     def addFriends(self):
         sleep(30)
-        print('ç‚¹å‡»- + --->')
+        print('µã»÷- + --->')
         add = self.driver.find_element_by_id("com.tencent.mm:id/qk")
         add.click()
 
-        print('ç‚¹å‡»æ·»åŠ å¥½å‹')
+        print('µã»÷Ìí¼ÓºÃÓÑ')
         addLayout = self.driver.find_element_by_xpath(
             "/hierarchy/android.widget.FrameLayout/android.widget.ListView/android.widget.LinearLayout[2]")
         addLayout.click()
@@ -59,13 +61,13 @@ class WeChatTest(object):
         goSearch.click()
 
         searchEdt = self.driver.find_element_by_id("com.tencent.mm:id/li")
-        searchEdt.send_keys("jackli674297026")
+        searchEdt.send_keys("shouji132212681089")
 
         searchBtn = self.driver.find_element_by_id("com.tencent.mm:id/ra")
         searchBtn.click()
         sleep(30)
 
-        # è·å–åœ°åŒº
+        # »ñÈ¡µØÇø
         localTxt = self.driver.find_element_by_id("	com.tencent.mm:id/b82").text
         self.location = localTxt
 
@@ -77,64 +79,64 @@ class WeChatTest(object):
         self.name = friendName
         print('friendName' + friendName)
 
-        markPageBack = self.driver.find_element_by_accessibility_id("è¿”å›")
+        markPageBack = self.driver.find_element_by_accessibility_id("·µ»Ø")
         markPageBack.click()
 
-        print("æ·»åŠ å¥½å‹")
+        print("Ìí¼ÓºÃÓÑ")
         addFriends = self.driver.find_element_by_xpath(
             "/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.View/android.widget.FrameLayout[1]/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.LinearLayout/android.widget.ListView/android.widget.LinearLayout[4]/android.widget.LinearLayout")
         addFriends.click()
 
-        addFriendsBack = self.driver.find_element_by_accessibility_id("è¿”å›")
+        addFriendsBack = self.driver.find_element_by_accessibility_id("·µ»Ø")
         addFriendsBack.click()
 
-        searchPageBack = self.driver.find_element_by_accessibility_id("è¿”å›")
+        searchPageBack = self.driver.find_element_by_accessibility_id("·µ»Ø")
         searchPageBack.click()
 
-        goHome = self.driver.find_element_by_accessibility_id("è¿”å›")
+        goHome = self.driver.find_element_by_accessibility_id("·µ»Ø")
         goHome.click()
 
-    # çˆ¬å–æŒ‡å®šæœ‹å‹çš„æ•°æ®
+    # ÅÀÈ¡Ö¸¶¨ÅóÓÑµÄÊı¾İ
     def getFriendMsg(self):
-        # å…ˆæ‰¾åˆ°å¥½å‹
+        # ÏÈÕÒµ½ºÃÓÑ
         huiHua = self.driver.find_elements_by_id('com.tencent.mm:id/b9i')
         for item in huiHua:
-            if 'äºŒä¹‹æ—¥' in item.text:
-                # æ‰¾åˆ°è”ç³»äººæ‰“å¼€èŠå¤©å®¤
+            if '¶şÖ®ÈÕ' in item.text:
+                # ÕÒµ½ÁªÏµÈË´ò¿ªÁÄÌìÊÒ
                 item.click()
                 sleep(5)
-                # æ‰¾åˆ°è”ç³»äººä¿¡æ¯ç•Œé¢
-                openInfo = self.driver.find_element_by_accessibility_id("èŠå¤©ä¿¡æ¯")
+                # ÕÒµ½ÁªÏµÈËĞÅÏ¢½çÃæ
+                openInfo = self.driver.find_element_by_accessibility_id("ÁÄÌìĞÅÏ¢")
                 openInfo.click()
-                # ç‚¹å‡»å¤´åƒ
+                # µã»÷Í·Ïñ
                 headImg = self.driver.find_element_by_xpath(
-                    "//android.widget.FrameLayout[@content-desc=\"å½“å‰æ‰€åœ¨é¡µé¢,èŠå¤©ä¿¡æ¯\"]/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.View/android.widget.FrameLayout[2]/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.LinearLayout/android.widget.ListView/android.widget.LinearLayout[1]/android.widget.RelativeLayout[1]")
+                    "//android.widget.FrameLayout[@content-desc=\"µ±Ç°ËùÔÚÒ³Ãæ,ÁÄÌìĞÅÏ¢\"]/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.View/android.widget.FrameLayout[2]/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.LinearLayout/android.widget.ListView/android.widget.LinearLayout[1]/android.widget.RelativeLayout[1]")
                 headImg.click()
-                # ç‚¹å‡»æœ‹å‹åœˆç›¸å†Œ
-                friendPhoto = self.driver.find_element_by_xpath("//*[@text='æœ‹å‹åœˆ']")
+                # µã»÷ÅóÓÑÈ¦Ïà²á
+                friendPhoto = self.driver.find_element_by_xpath("//*[@text='ÅóÓÑÈ¦']")
                 TouchAction(self.driver).tap(friendPhoto).perform()
                 sleep(10)
-                # å¼€å§‹æŠ“å–æœ‹å‹åœˆæ•°æ® å†…å®¹ID com.tencent.mm:id/or      itemç‚¹å‡»ï¼š 	com.tencent.mm:id/ers
+                # ¿ªÊ¼×¥È¡ÅóÓÑÈ¦Êı¾İ ÄÚÈİID com.tencent.mm:id/or      itemµã»÷£º 	com.tencent.mm:id/ers
                 diction = dict()
                 currItem = dict()
-                # å¼€å§‹å¾ªç¯æ‹¿åˆ—è¡¨
+                # ¿ªÊ¼Ñ­»·ÄÃÁĞ±í
                 while True:
                     flag = True
                     self.driver.swipe(500, 800, 500, 500, 2000)
                     sleep(5)
-                    # æ‹¿åˆ°æ‰€æœ‰çš„çš„æ ‡é¢˜ bounds
+                    # ÄÃµ½ËùÓĞµÄµÄ±êÌâ bounds
                     infoList = self.driver.find_elements_by_id('com.tencent.mm:id/or')
                     for info in infoList:
                         print(info.text)
 
-    # è·å–å¥½å‹åˆ—è¡¨
+    # »ñÈ¡ºÃÓÑÁĞ±í
     def getFriendListMsg(self):
-        # ç‚¹å‡»æœ‹å‹åœˆ
-        friendPage = self.driver.find_element_by_xpath("//*[@text='é€šè®¯å½•']")
+        # µã»÷ÅóÓÑÈ¦
+        friendPage = self.driver.find_element_by_xpath("//*[@text='Í¨Ñ¶Â¼']")
         TouchAction(self.driver).tap(friendPage).perform()
-        # å®šä¹‰æ•°æ®é›†åˆ
+        # ¶¨ÒåÊı¾İ¼¯ºÏ
         friendCollection = dict()
-        # è·å–æ‰€æœ‰çš„è”ç³»äººæ˜µç§°
+        # »ñÈ¡ËùÓĞµÄÁªÏµÈËêÇ³Æ
 
         while True:
             flag = True
@@ -151,48 +153,109 @@ class WeChatTest(object):
 
             try:
                 self.driver.find_element_by_id('com.tencent.mm:id/b3o')
-                print('æœ‹å‹åˆ—è¡¨è·å–å®Œæˆ')
+                print('ÅóÓÑÁĞ±í»ñÈ¡Íê³É')
                 flag = False
             except Exception:
                 pass
 
             if flag is False:
                 break
-        #  è·å–åˆ—è¡¨æˆåŠŸ å¼€å§‹å¾ªç¯ç‚¹å‡»è¿›å…¥
+        #  »ñÈ¡ÁĞ±í³É¹¦ ¿ªÊ¼Ñ­»·µã»÷½øÈë
         print(friendCollection)
 
-    # ç›´æ¥çˆ¬å–æœ‹å‹åœˆçš„
+    # Ö±½ÓÅÀÈ¡ÅóÓÑÈ¦µÄ
     def crawl(self):
-        # ç‚¹å‡»å‘ç°
-        findPage = self.driver.find_element_by_xpath("//*[@text='å‘ç°']")
-        TouchAction(self.driver).tap(findPage).perform()
-        # ç‚¹å‡»æœ‹å‹åœˆ
-        goFriendPage = self.driver.find_element_by_xpath("//*[@text='æœ‹å‹åœˆ']")
-        TouchAction(self.driver).tap(goFriendPage).perform()
-        sleep(5)
-        # 	com.tencent.mm:id/eu7
+        sleep(2)
+        # µã»÷·¢ÏÖ
+        findPage = self.driver.find_element_by_xpath("//*[@text='·¢ÏÖ']")
+        self.touch_tap(findPage.location.get('x'), findPage.location.get('y'))
+        sleep(2)
+        # µã»÷ÅóÓÑÈ¦
+        goFriendPage = self.driver.find_element_by_xpath("//*[@text='ÅóÓÑÈ¦']")
+        self.touch_tap(goFriendPage.location.get('x'), goFriendPage.location.get('y'))
+        sleep(2)
+
         dataCollection = dict()
 
         while True:
             flag = True
             self.driver.swipe(500, 1000, 500, 500, 2000)
-            itemArr = self.driver.find_element_by_xpath('//android.widget.FrameLayout[@content-desc="å½“å‰æ‰€åœ¨é¡µé¢,æœ‹å‹åœˆ"]/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.View/android.widget.FrameLayout[1]/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.ListView//android.widget.FrameLayout')
+            itemArr = self.driver.find_elements_by_id("com.tencent.mm:id/eu7")
             for item in itemArr:
-                nickname = item.find_element_by_id('com.tencent.mm:id/b9i').get_attribute('text')
-                # æ­£æ–‡
-                content = item.find_element_by_id('com.tencent.mm:id/eua').get_attribute('text')
-                print(nickname)
-                print(content)
+                nickname = item.find_element_by_id('com.tencent.mm:id/b9i').text
+                # ÕıÎÄ
+                content = item.find_element_by_id('com.tencent.mm:id/eua').text
+                # ²éÕÒ¸ÃÌõ¼ÇÂ¼ÊÇ·ñ´æÔÚ
+                # findItemExist(dataCollection, nickname, content)
+                # Í¼Æ¬  ÊÓÆµ£º content-desc = Í¼Æ¬
+                try:
+                    item.find_element_by_id("com.tencent.mm:id/eow").click()
+                    sleep(2)
+                    activityName = self.driver.current_activity
+                    # .plugin.sns.ui.SnsBrowseUI'(Í¼Æ¬)
+                    # .plugin.webview.ui.tools.WebViewUI£¨Á´½Ó£©
+                    # '.plugin.sns.ui.SnsOnlineVideoActivity£¨ÊÓÆµ£©' ´ò¿ªµÄÊÇÁ´½Ó
+                    if "WebViewUI" in activityName:
+                        self.driver.find_element_by_accessibility_id("·µ»Ø").click()
+                    # ´ò¿ªµÄÊÇÍ¼Æ¬µÄ
+                    if "SnsBrowseUI" in activityName:
+                        self.save_img()
+                    if "SnsOnlineVideoActivity" in activityName:
+                        self
+
+                    flag = False
+                except Exception:
+                    print(nickname + "Ã»ÓĞÍ¼Æ¬ºÍÊÓÆµ")
+                    pass
+
+    # »ñÈ¡Éè±¸±£´æÅóÓÑÈ¦µÄÎÄ¼ş
+    def getWeChatFile(self):
+        # ±£´æµÄÍ¼Æ¬ÎÄ¼ş¼Ğ adb pull <ÊÖ»úÄ¿Â¼> <µçÄÔÄ¿Â¼>
+        os.system("adb pull /sdcard/tencent/MicroMsg/WeiXin/  e:/aa")
+
+    def save_img(self):
+        # com.tencent.mm:id/dgy Ğ¡Ô²µã
+        try:
+            iconArr = self.driver.find_elements_by_id("com.tencent.mm:id/dgy")
+            for item in iconArr:
+                # ³¤°´
+                imageView = self.driver.find_element_by_class_name("android.widget.ImageView")
+                TouchAction(self.driver).long_press(imageView, imageView.location.get('x'), imageView.location.get('y'), 1000)
+                self.driver.find_element_by_xpath("//*[@text='±£´æÍ¼Æ¬']")
+                # ±£´æµ±Ç°Ê±¼ä´Á
+                sleep(1)
+                # »¬¶¯ÏÂÒ»ÕÅ
+                self.horizontalScrolling()
+        except Exception:
+            imageView = self.driver.find_element_by_class_name("android.widget.ImageView")
+            TouchAction(self.driver).long_press(imageView, imageView.location.get('x'), imageView.location.get('y'),
+                                                1000)
 
 
+    def touch_tap(self, x, y, duration=100):  # µã»÷×ø±ê  ,x1,x2,y1,y2,duration
+        '''
+        method explain:µã»÷×ø±ê
+        parameter explain£º¡¾x,y¡¿×ø±êÖµ,¡¾duration¡¿:¸øµÄÖµ¾ö¶¨ÁËµã»÷µÄËÙ¶È
+        Usage:
+            device.touch_coordinate(277,431)      #277.431Îªµã»÷Ä³¸öÔªËØµÄxÓëyÖµ
+        '''
+        screen_width = self.driver.get_window_size()['width']  # »ñÈ¡µ±Ç°ÆÁÄ»µÄ¿í
+        screen_height = self.driver.get_window_size()['height']  # »ñÈ¡µ±Ç°ÆÁÄ»µÄ¸ß
+        a = (float(x) / screen_width) * screen_width
+        x1 = int(a)
+        b = (float(y) / screen_height) * screen_height
+        y1 = int(b)
+        self.driver.tap([(x1, y1), (x1, y1)], duration)
 
-
-
-
-
+    # ºáÏò¹ö¶¯½çÃæ
+    def horizontalScrolling(self):
+        screen_width = self.driver.get_window_size()['width']  # »ñÈ¡µ±Ç°ÆÁÄ»µÄ¿í
+        screen_height = self.driver.get_window_size()['height']  # »ñÈ¡µ±Ç°ÆÁÄ»µÄ¸ß
+        self.driver.swipe(500 * 0.3, screen_height / 2, 500 * 0.6, screen_height / 2, 2000)
 
 
 if __name__ == '__main__':
     weChat = WeChatTest()
     # weChat.getFriendMsg()
+    # weChat.addFriends()
     weChat.crawl()
