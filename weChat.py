@@ -1,9 +1,13 @@
 # coding=gbk
-
-from appium import webdriver
+import selenium
+from appium import webdriver, common
 from time import sleep
 from appium.webdriver.common.touch_action import TouchAction
 import os
+
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support.wait import WebDriverWait
+
 
 class WeChatTest(object):
     def __init__(self):
@@ -179,7 +183,7 @@ class WeChatTest(object):
 
         while True:
             flag = True
-            self.driver.swipe(500, 1000, 500, 500, 2000)
+            self.verticalScrolling()
             itemArr = self.driver.find_elements_by_id("com.tencent.mm:id/eu7")
             for item in itemArr:
                 nickname = item.find_element_by_id('com.tencent.mm:id/b9i').text
@@ -189,7 +193,9 @@ class WeChatTest(object):
                 # findItemExist(dataCollection, nickname, content)
                 # 图片  视频： content-desc = 图片
                 try:
-                    item.find_element_by_id("com.tencent.mm:id/eow").click()
+                    contentGroup = item.find_element_by_id("com.tencent.mm:id/eow")
+                    # contentGroup.click()
+                    self.touch_tap(contentGroup.location.get('x') + 50, contentGroup.location.get('y') + 50)
                     sleep(2)
                     activityName = self.driver.current_activity
                     # .plugin.sns.ui.SnsBrowseUI'(图片)
@@ -216,21 +222,28 @@ class WeChatTest(object):
     def save_img(self):
         # com.tencent.mm:id/dgy 小圆点
         try:
+            # 查找小圆点的父类容器
             iconArr = self.driver.find_elements_by_id("com.tencent.mm:id/dgy")
-            for item in iconArr:
-                # 长按
+            if len(iconArr) > 0:
+                for item in iconArr:
+                    # 长按
+                    imageView = self.driver.find_element_by_class_name("android.widget.ImageView")
+                    TouchAction(self.driver).long_press(imageView, 1000).wait(2000).perform()
+                    self.driver.find_element_by_xpath("//*[@text='保存图片']").click()
+                    # 保存当前时间戳
+                    sleep(1)
+                    # 滑动下一张
+                    self.horizontalScrolling()
+                self.driver.find_element_by_class_name("android.widget.ImageView").click()
+                sleep(5)
+            else:
                 imageView = self.driver.find_element_by_class_name("android.widget.ImageView")
-                TouchAction(self.driver).long_press(imageView, imageView.location.get('x'), imageView.location.get('y'), 1000)
-                self.driver.find_element_by_xpath("//*[@text='保存图片']")
-                # 保存当前时间戳
-                sleep(1)
-                # 滑动下一张
-                self.horizontalScrolling()
-        except Exception:
+                TouchAction(self.driver).long_press(imageView, imageView.location.get('x'), imageView.location.get('y'),
+                                                    1000)
+        except NoSuchElementException:
             imageView = self.driver.find_element_by_class_name("android.widget.ImageView")
             TouchAction(self.driver).long_press(imageView, imageView.location.get('x'), imageView.location.get('y'),
                                                 1000)
-
 
     def touch_tap(self, x, y, duration=100):  # 点击坐标  ,x1,x2,y1,y2,duration
         '''
@@ -251,7 +264,24 @@ class WeChatTest(object):
     def horizontalScrolling(self):
         screen_width = self.driver.get_window_size()['width']  # 获取当前屏幕的宽
         screen_height = self.driver.get_window_size()['height']  # 获取当前屏幕的高
-        self.driver.swipe(500 * 0.3, screen_height / 2, 500 * 0.6, screen_height / 2, 2000)
+        self.driver.swipe(screen_width * 0.8, screen_height / 2, screen_width * 0.1, screen_height / 2, 2000)
+
+    # 竖向滚动界面
+    def verticalScrolling(self):
+        screen_width = self.driver.get_window_size()['width']  # 获取当前屏幕的宽
+        screen_height = self.driver.get_window_size()['height']  # 获取当前屏幕的高
+        sleep(2)
+        self.driver.swipe(screen_width / 2, screen_height * 0.6, screen_width / 2, screen_height * 0.4, 2000)
+
+    def findElement(self):
+        try:
+            WebDriverWait(self.driver, common.WAIT_TIME, 1).until(
+                self.driver.find_element_by_id('com.tencent.mm:id/eqp'))
+            return True
+        except selenium.common.exceptions.TimeoutException:
+            return False
+        except selenium.common.exceptions.NoSuchElementException:
+            return False
 
 
 if __name__ == '__main__':
