@@ -1,9 +1,10 @@
 # coding=gbk
 import selenium
 from appium import webdriver, common
-from time import sleep
+from time import sleep, time
 from appium.webdriver.common.touch_action import TouchAction
 import os
+import time
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.wait import WebDriverWait
@@ -19,7 +20,7 @@ class WeChatTest(object):
             "noReset": "True"
         }
         self.driver = webdriver.Remote('http://127.0.0.1:4723/wd/hub', self.desired_caps)
-        self.driver.implicitly_wait(1000)
+        self.driver.implicitly_wait(100)
         self.name = ""
         self.sex = ""
         self.location = ""
@@ -205,46 +206,53 @@ class WeChatTest(object):
                         self.driver.find_element_by_accessibility_id("返回").click()
                     # 打开的是图片的
                     if "SnsBrowseUI" in activityName:
-                        self.save_img()
+                        self.save_images()
                     if "SnsOnlineVideoActivity" in activityName:
-                        self
-
+                        self.save_videos()
                     flag = False
                 except Exception:
                     print(nickname + "没有图片和视频")
                     pass
 
-    # 获取设备保存朋友圈的文件
-    def getWeChatFile(self):
-        # 保存的图片文件夹 adb pull <手机目录> <电脑目录>
-        os.system("adb pull /sdcard/tencent/MicroMsg/WeiXin/  e:/aa")
+    # 保存视频操作
+    def save_videos(self):
+        # android.view.View
+        currTime = 0
+        videoGroup = self.driver.find_element_by_class_name("android.view.View")
+        TouchAction(self.driver).long_press(videoGroup, 1000).wait(2000).perform()
+        self.driver.find_element_by_xpath("//*[@text='保存视频']").click()
+        currTime = time.time() * 1000
+        sleep(1)
+        # 点击退出界面
+        videoGroup.click()
+        return currTime
 
-    def save_img(self):
-        # com.tencent.mm:id/dgy 小圆点
-        try:
-            # 查找小圆点的父类容器
-            iconArr = self.driver.find_elements_by_id("com.tencent.mm:id/dgy")
-            if len(iconArr) > 0:
-                for item in iconArr:
-                    # 长按
-                    imageView = self.driver.find_element_by_class_name("android.widget.ImageView")
-                    TouchAction(self.driver).long_press(imageView, 1000).wait(2000).perform()
-                    self.driver.find_element_by_xpath("//*[@text='保存图片']").click()
-                    # 保存当前时间戳
-                    sleep(1)
-                    # 滑动下一张
-                    self.horizontalScrolling()
-                self.driver.find_element_by_class_name("android.widget.ImageView").click()
-                sleep(5)
-            else:
-                imageView = self.driver.find_element_by_class_name("android.widget.ImageView")
-                TouchAction(self.driver).long_press(imageView, imageView.location.get('x'), imageView.location.get('y'),
-                                                    1000)
-        except NoSuchElementException:
-            imageView = self.driver.find_element_by_class_name("android.widget.ImageView")
-            TouchAction(self.driver).long_press(imageView, imageView.location.get('x'), imageView.location.get('y'),
-                                                1000)
+    # 保存图片的方法
+    def save_image(self):
+        # android.widget.Gallery
+        imageGroup = self.driver.find_element_by_class_name("android.widget.Gallery")
+        imageArr = imageGroup.find_elements_by_class_name("android.widget.ImageView")
+        if len(imageArr) == 1:
+            self.longClickSave(imageArr[0])
+        else:
+            for item in imageArr:
+                self.longClickSave(item)
+        self.driver.find_element_by_class_name("android.widget.ImageView").click()
+        sleep(3)
 
+    # 长按保存 + 滑动到下一张
+    def longClickSave(self, element):
+        currTime = 0
+        TouchAction(self.driver).long_press(element, 1000).wait(2000).perform()
+        self.driver.find_element_by_xpath("//*[@text='保存图片']").click()
+        # 保存当前时间戳(毫秒级别)
+        currTime = time.time() * 1000
+        sleep(1)
+        # 滑动下一张
+        self.horizontalScrolling()
+        return currTime
+
+    # 坐标点击
     def touch_tap(self, x, y, duration=100):  # 点击坐标  ,x1,x2,y1,y2,duration
         '''
         method explain:点击坐标
@@ -273,15 +281,10 @@ class WeChatTest(object):
         sleep(2)
         self.driver.swipe(screen_width / 2, screen_height * 0.6, screen_width / 2, screen_height * 0.4, 2000)
 
-    def findElement(self):
-        try:
-            WebDriverWait(self.driver, common.WAIT_TIME, 1).until(
-                self.driver.find_element_by_id('com.tencent.mm:id/eqp'))
-            return True
-        except selenium.common.exceptions.TimeoutException:
-            return False
-        except selenium.common.exceptions.NoSuchElementException:
-            return False
+    # 获取设备保存朋友圈的文件
+    def getWeChatFile(self):
+        # 保存的图片文件夹 adb pull <手机目录> <电脑目录>
+        os.system("adb pull /sdcard/tencent/MicroMsg/WeiXin/  e:/aa")
 
 
 if __name__ == '__main__':
