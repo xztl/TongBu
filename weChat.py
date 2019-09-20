@@ -20,7 +20,7 @@ class WeChatTest(object):
             "noReset": "True"
         }
         self.driver = webdriver.Remote('http://127.0.0.1:4723/wd/hub', self.desired_caps)
-        self.driver.implicitly_wait(100)
+        self.driver.implicitly_wait(5)
         self.name = ""
         self.sex = ""
         self.location = ""
@@ -180,39 +180,44 @@ class WeChatTest(object):
         self.touch_tap(goFriendPage.location.get('x'), goFriendPage.location.get('y'))
         sleep(2)
 
+        # 收集信息的集合 {userName : [{content:说说内容 type:"1 照片 2 视频 3 地址" ,photo:[时间戳,时间戳,时间戳],video:时间戳,webUrl:地址}]}
         dataCollection = dict()
 
         while True:
             flag = True
-            self.verticalScrolling()
+            self.verticalScrolling(0.6, 0.4)
             itemArr = self.driver.find_elements_by_id("com.tencent.mm:id/eu7")
             for item in itemArr:
-                nickname = item.find_element_by_id('com.tencent.mm:id/b9i').text
-                # 正文
-                content = item.find_element_by_id('com.tencent.mm:id/eua').text
-                # 查找该条记录是否存在
-                # findItemExist(dataCollection, nickname, content)
-                # 图片  视频： content-desc = 图片
                 try:
-                    contentGroup = item.find_element_by_id("com.tencent.mm:id/eow")
-                    # contentGroup.click()
-                    self.touch_tap(contentGroup.location.get('x') + 50, contentGroup.location.get('y') + 50)
-                    sleep(2)
-                    activityName = self.driver.current_activity
-                    # .plugin.sns.ui.SnsBrowseUI'(图片)
-                    # .plugin.webview.ui.tools.WebViewUI（链接）
-                    # '.plugin.sns.ui.SnsOnlineVideoActivity（视频）' 打开的是链接
-                    if "WebViewUI" in activityName:
-                        self.driver.find_element_by_accessibility_id("返回").click()
-                    # 打开的是图片的
-                    if "SnsBrowseUI" in activityName:
-                        self.save_images()
-                    if "SnsOnlineVideoActivity" in activityName:
-                        self.save_videos()
-                    flag = False
-                except Exception:
-                    print(nickname + "没有图片和视频")
-                    pass
+                    nickname = item.find_element_by_id('com.tencent.mm:id/b9i').text
+                    # 正文
+                    content = item.find_element_by_id('com.tencent.mm:id/eua').text
+                    print(nickname + "------->" + content)
+                    isExist = itemExist(dataCollection, nickname, content)
+                    if not isExist:
+                        # 执行读取数据操作
+                        contentGroup = item.find_element_by_id("com.tencent.mm:id/eow")
+                        self.touch_tap(contentGroup.location.get('x') + 50, contentGroup.location.get('y') + 50)
+                        sleep(2)
+                        activityName = self.driver.current_activity
+                        if "WebViewUI" in activityName:
+                            self.driver.find_element_by_accessibility_id("返回").click()
+                        # 打开的是图片的
+                        if "SnsBrowseUI" in activityName:
+                            imgArr = self.save_image()
+                            # 保存数据
+                            itemData = {'content': content, 'type': 1, 'photo': imgArr}
+                            saveItemDataInCollection(dataCollection, nickname, itemData)
+
+                        if "SnsOnlineVideoActivity" in activityName:
+                            fileInfo = self.save_videos()
+                            itemData = {'content': content, 'type': 1, 'video': fileInfo}
+                            saveItemDataInCollection(dataCollection, nickname, itemData)
+
+                        print(dataCollection)
+                except Exception as a:
+                    self.verticalScrolling(0.6, 0.5)
+                    print(a)
 
     # 保存视频操作
     def save_videos(self):
@@ -230,15 +235,19 @@ class WeChatTest(object):
     # 保存图片的方法
     def save_image(self):
         # android.widget.Gallery
+        imagArr = []
         imageGroup = self.driver.find_element_by_class_name("android.widget.Gallery")
         imageArr = imageGroup.find_elements_by_class_name("android.widget.ImageView")
         if len(imageArr) == 1:
-            self.longClickSave(imageArr[0])
+            fileInfo = self.longClickSave(imageArr[0])
+            imagArr.append(fileInfo)
         else:
             for item in imageArr:
-                self.longClickSave(item)
+                fileInfo = self.longClickSave(item)
+                imagArr.append(fileInfo)
         self.driver.find_element_by_class_name("android.widget.ImageView").click()
         sleep(3)
+        return imagArr
 
     # 长按保存 + 滑动到下一张
     def longClickSave(self, element):
@@ -275,16 +284,11 @@ class WeChatTest(object):
         self.driver.swipe(screen_width * 0.8, screen_height / 2, screen_width * 0.1, screen_height / 2, 2000)
 
     # 竖向滚动界面
-    def verticalScrolling(self):
+    def verticalScrolling(self, start, end):
         screen_width = self.driver.get_window_size()['width']  # 获取当前屏幕的宽
         screen_height = self.driver.get_window_size()['height']  # 获取当前屏幕的高
         sleep(2)
-        self.driver.swipe(screen_width / 2, screen_height * 0.6, screen_width / 2, screen_height * 0.4, 2000)
-
-    # 获取设备保存朋友圈的文件
-    def getWeChatFile(self):
-        # 保存的图片文件夹 adb pull <手机目录> <电脑目录>
-        os.system("adb pull /sdcard/tencent/MicroMsg/WeiXin/  e:/aa")
+        self.driver.swipe(screen_width / 2, screen_height * start, screen_width / 2, screen_height * end, 2000)
 
 
 if __name__ == '__main__':
@@ -292,3 +296,34 @@ if __name__ == '__main__':
     # weChat.getFriendMsg()
     # weChat.addFriends()
     weChat.crawl()
+
+
+# 查找数据集合中是否包含该条数据
+def itemExist(dataCollection, nickname, content):
+    if nickname in dataCollection:
+        dataArr = dataCollection[nickname]
+        if len(dataArr) > 0:
+            for item in dataArr:
+                if item['content'] == content:
+                    return True
+            return False
+        else:
+            return False
+    else:
+        return False
+
+
+# 保存数据到集合
+def saveItemDataInCollection(dataCollection, nikeName, data):
+    if nikeName in dataCollection:
+        dataArr = dataCollection[nikeName]
+        dataArr.append(data)
+    else:
+        dataArr = [data]
+        dataCollection[nikeName] = dataArr
+
+
+# 获取设备保存朋友圈的文件
+def getWeChatFile(self):
+    # 保存的图片文件夹 adb pull <手机目录> <电脑目录>
+    os.system("adb pull /sdcard/tencent/MicroMsg/WeiXin/  e:/aa")
