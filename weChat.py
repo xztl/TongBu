@@ -5,6 +5,7 @@ from time import sleep, time
 from appium.webdriver.common.touch_action import TouchAction
 import os
 import time
+import re
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.wait import WebDriverWait
@@ -180,6 +181,7 @@ class WeChatTest(object):
         self.touch_tap(goFriendPage.location.get('x'), goFriendPage.location.get('y'))
         sleep(2)
 
+        rex = re.compile('[^\u4e00-\u9fa5^a-z^A-Z^0-9]')
         # 收集信息的集合 {userName : [{content:说说内容 type:"1 照片 2 视频 3 地址" ,photo:[时间戳,时间戳,时间戳],video:时间戳,webUrl:地址}]}
         dataCollection = dict()
 
@@ -189,30 +191,34 @@ class WeChatTest(object):
             itemArr = self.driver.find_elements_by_id("com.tencent.mm:id/eu7")
             for item in itemArr:
                 try:
+                    # 昵称
                     nickname = item.find_element_by_id('com.tencent.mm:id/b9i').text
+                    nickname = rex.sub('', nickname)
                     # 正文
                     content = item.find_element_by_id('com.tencent.mm:id/eua').text
+                    content = rex.sub('', content)
                     print(nickname + "------->" + content)
-                    isExist = itemExist(dataCollection, nickname, content)
+                    isExist = self.itemExist(dataCollection, nickname, content)
                     if not isExist:
                         # 执行读取数据操作
                         contentGroup = item.find_element_by_id("com.tencent.mm:id/eow")
                         self.touch_tap(contentGroup.location.get('x') + 50, contentGroup.location.get('y') + 50)
                         sleep(2)
+                        # 打开的是链接的
                         activityName = self.driver.current_activity
                         if "WebViewUI" in activityName:
                             self.driver.find_element_by_accessibility_id("返回").click()
                         # 打开的是图片的
                         if "SnsBrowseUI" in activityName:
-                            imgArr = self.save_image()
+                            imgArr = self.save_images()
                             # 保存数据
                             itemData = {'content': content, 'type': 1, 'photo': imgArr}
-                            saveItemDataInCollection(dataCollection, nickname, itemData)
-
+                            self.saveItemDataInCollection(dataCollection, nickname, itemData)
+                        # 打开的是video的
                         if "SnsOnlineVideoActivity" in activityName:
                             fileInfo = self.save_videos()
                             itemData = {'content': content, 'type': 1, 'video': fileInfo}
-                            saveItemDataInCollection(dataCollection, nickname, itemData)
+                            self.saveItemDataInCollection(dataCollection, nickname, itemData)
 
                         print(dataCollection)
                 except Exception as a:
@@ -232,22 +238,39 @@ class WeChatTest(object):
         videoGroup.click()
         return currTime
 
+    def save_images(self):
+        # com.tencent.mm: id / dgy
+        imageArr = []
+        try:
+            imageViewArr = self.driver.find_elements_by_id("com.tencent.mm:id/dgy")
+            for item in imageViewArr:
+                fileInfo = self.longClickSave(item)
+                imageArr.append(fileInfo)
+        except Exception as e:
+            imageView = self.driver.find_elements_by_class_name("android.widget.ImageView")
+            fileInfo = self.longClickSave(imageView)
+            imageArr.append(fileInfo)
+            print(e)
+        self.driver.find_element_by_class_name("android.widget.ImageView").click()
+        sleep(3)
+        return imageArr
+
     # 保存图片的方法
     def save_image(self):
         # android.widget.Gallery
-        imagArr = []
+        imageArr = []
         imageGroup = self.driver.find_element_by_class_name("android.widget.Gallery")
-        imageArr = imageGroup.find_elements_by_class_name("android.widget.ImageView")
-        if len(imageArr) == 1:
-            fileInfo = self.longClickSave(imageArr[0])
-            imagArr.append(fileInfo)
+        imageViewArr = imageGroup.find_elements_by_class_name("android.widget.ImageView")
+        if len(imageViewArr) == 1:
+            fileInfo = self.longClickSave(imageViewArr[0])
+            imageArr.append(fileInfo)
         else:
-            for item in imageArr:
+            for item in imageViewArr:
                 fileInfo = self.longClickSave(item)
-                imagArr.append(fileInfo)
+                imageArr.append(fileInfo)
         self.driver.find_element_by_class_name("android.widget.ImageView").click()
         sleep(3)
-        return imagArr
+        return imageArr
 
     # 长按保存 + 滑动到下一张
     def longClickSave(self, element):
@@ -290,40 +313,37 @@ class WeChatTest(object):
         sleep(2)
         self.driver.swipe(screen_width / 2, screen_height * start, screen_width / 2, screen_height * end, 2000)
 
+    # 查找数据集合中是否包含该条数据
+    def itemExist(self, dataJson, nickname, content):
+        if nickname in dataJson:
+            dataArr = dataJson[nickname]
+            if len(dataArr) > 0:
+                for item in dataArr:
+                    if item['content'] == content:
+                        return True
+                return False
+            else:
+                return False
+        else:
+            return False
+
+    # 保存数据到集合
+    def saveItemDataInCollection(self, dataJson, nikeName, data):
+        if nikeName in dataJson:
+            dataArr = dataJson[nikeName]
+            dataArr.append(data)
+        else:
+            dataArr = [data]
+            dataJson[nikeName] = dataArr
+
+    # 获取设备保存朋友圈的文件
+    def getWeChatFile(self):
+        # 保存的图片文件夹 adb pull <手机目录> <电脑目录>
+        os.system("adb pull /sdcard/tencent/MicroMsg/WeiXin/  e:/aa")
+
 
 if __name__ == '__main__':
     weChat = WeChatTest()
     # weChat.getFriendMsg()
     # weChat.addFriends()
     weChat.crawl()
-
-
-# 查找数据集合中是否包含该条数据
-def itemExist(dataCollection, nickname, content):
-    if nickname in dataCollection:
-        dataArr = dataCollection[nickname]
-        if len(dataArr) > 0:
-            for item in dataArr:
-                if item['content'] == content:
-                    return True
-            return False
-        else:
-            return False
-    else:
-        return False
-
-
-# 保存数据到集合
-def saveItemDataInCollection(dataCollection, nikeName, data):
-    if nikeName in dataCollection:
-        dataArr = dataCollection[nikeName]
-        dataArr.append(data)
-    else:
-        dataArr = [data]
-        dataCollection[nikeName] = dataArr
-
-
-# 获取设备保存朋友圈的文件
-def getWeChatFile(self):
-    # 保存的图片文件夹 adb pull <手机目录> <电脑目录>
-    os.system("adb pull /sdcard/tencent/MicroMsg/WeiXin/  e:/aa")
